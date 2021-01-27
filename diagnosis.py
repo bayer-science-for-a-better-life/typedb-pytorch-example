@@ -16,6 +16,7 @@ grakn_dataset = GraknPytorchGeometricDataSet(
     uri="localhost:48555",
     keyspace="diagnosis",
     networkx_transform=networkx_transform,
+    caching=True
 )
 
 # TODO: multiple workers crashes
