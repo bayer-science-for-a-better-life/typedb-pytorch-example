@@ -23,7 +23,7 @@ using the environment-local.yml file:
 
 ```
 git clone https://github.com/graknlabs/kglib.git
-git clone https://github.com/jorenretel/grakn-pytorch-geometric.git
+git clone https://github.com/jorenretel/grakn-dataloading.git
 git clone https://github.com/jorenretel/grakn-pytorch-example.git
 
 cd grakn-pytorch-example
