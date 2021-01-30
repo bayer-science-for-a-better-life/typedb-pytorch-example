@@ -1,10 +1,11 @@
 import torch
+import torch.nn as nn
 from torch_geometric.nn import MessagePassing
 from torch_geometric.utils import degree
 import torch.nn.functional as F
 from torch_geometric.data import DataLoader
 from kglib.kgcn.examples.diagnosis.diagnosis import get_query_handles
-from grakn_dataloading.data import GraknPytorchGeometricDataSet
+from grakn_dataloading.pytorch_geometric import GraknPytorchGeometricDataSet
 from transforms import networkx_transform
 
 
@@ -50,7 +51,9 @@ class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         self.conv1 = TestConv(3, 16)
-        self.conv2 = TestConv(16, 3)
+        self.conv2 = TestConv(16, 16)
+        self.node_net = nn.Sequential(nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 3))
+        self.edge_net = nn.Sequential(nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 3))
 
     def forward(self, data):
         x_node, x_edge, edge_index,  = data.x, data.edge_attr, data.edge_index
@@ -60,6 +63,12 @@ class Net(torch.nn.Module):
         x_node = F.dropout(x_node, training=self.training)
         x_edge = F.dropout(x_edge, training=self.training)
         x_node, x_edge = self.conv2(x_node, x_edge, edge_index)
+        x_node = F.relu(x_node)
+        x_edge = F.relu(x_edge)
+        x_node = F.dropout(x_node, training=self.training)
+        x_edge = F.dropout(x_edge, training=self.training)
+        x_node = self.node_net(x_node)
+        x_edge = self.edge_net(x_edge)
         return x_node, x_edge
 
 model = Net()

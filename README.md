@@ -67,9 +67,10 @@ Prepare the grakn database (only once):
 python populate_database/prepare.py
 ```
 
-Run example:
+Example scripts:
 
-```
-python diagnosis.py
-```
+* diagnosis_pytorch_geometric_gcn.py: one of the simplest graph convolutions (Kipf and Welling 2017).
+* diagnosis_pytorch_geometric_custom.py: something custom, including edge features, just as a test.
+* diagnosis_dgl.py: starting to look into DGL (might be the better library for Heterogeneous Graphs).
+
 

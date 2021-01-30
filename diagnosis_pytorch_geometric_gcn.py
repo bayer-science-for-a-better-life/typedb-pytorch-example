@@ -3,7 +3,7 @@ import torch.nn.functional as F
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import GCNConv
 from kglib.kgcn.examples.diagnosis.diagnosis import get_query_handles
-from grakn_dataloading.data import GraknPytorchGeometricDataSet
+from grakn_dataloading.pytorch_geometric import GraknPytorchGeometricDataSet
 from transforms import networkx_transform
 
 
