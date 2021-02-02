@@ -1,7 +1,7 @@
 """
 An example where I took the GINEConv layer and changed it a little bit so that
 also edge features are transformed (and therefore edge classification becomes
-possible in the way it is done in kgcn.
+possible in the way it is done in kgcn. It is not completely how I want it yet.
 """
 
 from typing import Callable, Union

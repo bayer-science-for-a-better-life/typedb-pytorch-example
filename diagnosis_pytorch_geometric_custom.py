@@ -1,3 +1,8 @@
+"""
+An example where I tried incorporating edge features in the
+original Kipf and Welling Convolution. Just messing around here.
+"""
+
 import torch
 import torch.nn as nn
 from torch_geometric.nn import MessagePassing
