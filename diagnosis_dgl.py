@@ -14,10 +14,13 @@ grakn_dataset = GraknDGLDataSet(
     uri="localhost:48555",
     keyspace="diagnosis",
     networkx_transform=networkx_transform,
-    caching=True
+    caching=True,
 )
 
-dataloader = DataLoader(grakn_dataset, batch_size=2, num_workers=0, shuffle=True, collate_fn=dgl.batch)
+dataloader = DataLoader(
+    grakn_dataset, batch_size=2, num_workers=0, shuffle=True, collate_fn=dgl.batch
+)
+
 
 def train():
     for epoch in range(20):
@@ -25,6 +28,6 @@ def train():
             print(i, data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     train()
