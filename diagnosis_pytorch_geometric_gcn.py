@@ -36,9 +36,10 @@ loss_function = torch.nn.CrossEntropyLoss(ignore_index=0)
 
 
 class Net(torch.nn.Module):
-    '''Very Simple GCN with two graph convolution layers.
-       This model only takes into account node features.
-    '''
+    """Very Simple GCN with two graph convolution layers.
+    This model only takes into account node features.
+    """
+
     def __init__(self):
         super(Net, self).__init__()
         self.conv1 = GCNConv(grakn_dataset.num_node_features, 16)
