@@ -171,6 +171,14 @@ class Net(torch.nn.Module):
                 nn.Linear(16 + 16 + 16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
             ),
         )
+        self.conv3 = GINEdgeConv(
+            nn_node=nn.Sequential(
+                nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+            ),
+            nn_edge=nn.Sequential(
+                nn.Linear(16 + 16 + 16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+            ),
+        )
         self.node_net = nn.Sequential(nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 3))
         self.edge_net = nn.Sequential(nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 3))
 
@@ -183,8 +191,7 @@ class Net(torch.nn.Module):
 
         x_node, x_edge = self.conv1(x_node, edge_index, x_edge)
         x_node, x_edge = self.conv2(x_node, edge_index, x_edge)
-        x_node = F.dropout(x_node, training=self.training)
-        x_edge = F.dropout(x_edge, training=self.training)
+        x_node, x_edge = self.conv3(x_node, edge_index, x_edge)
         x_node = self.node_net(x_node)
         x_edge = self.edge_net(x_edge)
         return x_node, x_edge
