@@ -173,14 +173,12 @@ class Net(torch.nn.Module):
         )
         self.conv3 = GINEdgeConv(
             nn_node=nn.Sequential(
-                nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+                nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 3)
             ),
             nn_edge=nn.Sequential(
-                nn.Linear(16 + 16 + 16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+                nn.Linear(16 + 16 + 16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 3)
             ),
         )
-        self.node_net = nn.Sequential(nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 3))
-        self.edge_net = nn.Sequential(nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 3))
 
     def forward(self, data):
         x_node, x_edge, edge_index, = (
@@ -192,8 +190,6 @@ class Net(torch.nn.Module):
         x_node, x_edge = self.conv1(x_node, edge_index, x_edge)
         x_node, x_edge = self.conv2(x_node, edge_index, x_edge)
         x_node, x_edge = self.conv3(x_node, edge_index, x_edge)
-        x_node = self.node_net(x_node)
-        x_edge = self.edge_net(x_edge)
         return x_node, x_edge
 
 
