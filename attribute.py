@@ -16,7 +16,6 @@ class ContinuousAttribute(nn.Module):
         return embedding
 
 
-# This wrapper is a little bit unnecessary
 class CategoricalAttribute(nn.Module):
     def __init__(self, num_categories, attr_embedding_dim):
         super(CategoricalAttribute, self).__init__()
@@ -26,7 +25,7 @@ class CategoricalAttribute(nn.Module):
 
     def forward(self, attribute_value):
         # todo: tensorboard histogram here of continuous attributes
-        embedding = self.embedder(attribute_value.int())
+        embedding = self.embedder(attribute_value.squeeze().long())
         # todo: tensorboard histogram of continuous attibute embedding
         return embedding
 

@@ -5,75 +5,93 @@ import torch.nn as nn
 from attribute import ContinuousAttribute, CategoricalAttribute, BlankAttribute
 
 
-class ThingEmbedder(nn.Module):
+class Embedder(nn.Module):
     def __init__(
         self,
-        node_types,
-        type_embedding_dim,
-        attr_embedding_dim,
-        categorical_attributes,
-        continuous_attributes,
+        types,
+        encode_preexistence=True,
+        type_embedding_dim=0,
+        attr_embedding_dim=0,
+        categorical_attributes=None,
+        continuous_attributes=None,
     ):
         """
+        Embed the 3-vector (preexistence, type, value) from Grakn. Each type
+        has its own embedder to embed the value.
 
-        :param node_types:
+        :param types: list of node or edge types
+        :param encode_preexistence: to start each embedding with the existence bit
         :param type_embedding_dim: size of the type embedding
         :param attr_embedding_dim: size of the attribute embedding
         :param categorical_attributes: dict of {"attribute_name": ["catergory_1", "category_2", ...]}
         :param continuous_attributes: dict of {"attribute_name": (min_value, max_value)}
         """
 
-        super(ThingEmbedder, self).__init__()
-        self.type_embedder = nn.Embedding(
-            num_embeddings=len(node_types), embedding_dim=type_embedding_dim
-        )
-        self.attr_embeddder = TypewiseEncoder(
-            node_types=node_types,
-            embedding_dim=attr_embedding_dim,
-            categorical_attributes=categorical_attributes,
-            continuous_attributes=continuous_attributes,
-        )
+        super(Embedder, self).__init__()
+
+        self.type_embedder = None
+        self.attr_embeddder =None
+
+        self._encode_preexistence = encode_preexistence
+        if type_embedding_dim:
+            self.type_embedder = nn.Embedding(
+                num_embeddings=len(types), embedding_dim=type_embedding_dim
+            )
+        if attr_embedding_dim:
+            self.attr_embeddder = TypewiseEncoder(
+                types=types,
+                embedding_dim=attr_embedding_dim,
+                categorical_attributes=categorical_attributes,
+                continuous_attributes=continuous_attributes,
+            )
 
     def forward(self, X):
-        preexistence_feat = X[:, 0:1]
-        type_feat = self.type_embedder(X[:, 1].long())
-        attribute_feat = self.attr_embeddder(X[:, 1], X[:, 2:])
-        print("sizes: ", preexistence_feat.shape, type_feat.shape, attribute_feat.shape)
-        return torch.cat([preexistence_feat, type_feat, attribute_feat], dim=-1)
+        embedding = [torch.zeros((X.size(0), 0))]
+        if self._encode_preexistence:
+            embedding.append(X[:, 0:1])
+        if self.type_embedder:
+            embedding.append(self.type_embedder(X[:, 1].long()))
+        if self.attr_embeddder:
+            embedding.append(self.attr_embeddder(X[:, 1], X[:, 2:]))
+        return torch.cat(embedding, dim=-1)
 
 
 class TypewiseEncoder(nn.Module):
     def __init__(
-        self, node_types, embedding_dim, categorical_attributes, continuous_attributes
+        self, types, embedding_dim, categorical_attributes, continuous_attributes
     ):
         super(TypewiseEncoder, self).__init__()
-        self._node_types = node_types
+        self._types = types
         self._embedding_dim = embedding_dim
-
-        self.embedders = [BlankAttribute(attr_embedding_dim=self._embedding_dim)] * len(node_types)
-        self.construct_categorical_embedders(categorical_attributes)
-        self.construct_continuous_embedders(continuous_attributes)
-        self.embedders = nn.ModuleList(self.embedders)
+        self._encoders_for_types = [BlankAttribute(attr_embedding_dim=self._embedding_dim)] * len(types)
+        self._construct_categorical_embedders(categorical_attributes)
+        self._construct_continuous_embedders(continuous_attributes)
+        self._encoders_for_types = nn.ModuleList(self._encoders_for_types)
 
     def forward(self, types, features):
         shape = (features.size(0), self._embedding_dim)
-        print(shape)
-        return torch.zeros(shape)
+        types = types.long()
+        encoded_features = torch.zeros(shape)
 
-    def construct_categorical_embedders(self, categorical_attributes):
+        for i, encoder in enumerate(self._encoders_for_types):
+            mask = types == i
+            encoded_features[mask] = encoder(features[mask])
+        return encoded_features
+
+    def _construct_categorical_embedders(self, categorical_attributes):
         if not categorical_attributes:
             return
         for attribute_type, categories in categorical_attributes.items():
-            attr_typ_index = self._node_types.index(attribute_type)
+            attr_typ_index = self._types.index(attribute_type)
             embedder = CategoricalAttribute(
                 num_categories=len(categories), attr_embedding_dim=self._embedding_dim
             )
-            self.embedders[attr_typ_index] = embedder
+            self._encoders_for_types[attr_typ_index] = embedder
 
-    def construct_continuous_embedders(self, continuous_attributes):
+    def _construct_continuous_embedders(self, continuous_attributes):
         if not continuous_attributes:
             return
         for attribute_type in continuous_attributes.keys():
-            attr_typ_index = self._node_types.index(attribute_type)
+            attr_typ_index = self._types.index(attribute_type)
             embedder = ContinuousAttribute(attr_embedding_dim=self._embedding_dim)
-            self.embedders[attr_typ_index] = embedder
+            self._encoders_for_types[attr_typ_index] = embedder

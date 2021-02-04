@@ -26,7 +26,7 @@ from transforms import (
     CATEGORICAL_ATTRIBUTES,
     CONTINUOUS_ATTRIBUTES,
 )
-from embedding import ThingEmbedder
+from embedding import Embedder
 
 
 # train and test split
@@ -164,20 +164,22 @@ class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
 
-        self.node_embedder = ThingEmbedder(
-            node_types=node_types,
+        self.node_embedder = Embedder(
+            types=node_types,
             type_embedding_dim=5,
             attr_embedding_dim=6,
             categorical_attributes=CATEGORICAL_ATTRIBUTES,
             continuous_attributes=CONTINUOUS_ATTRIBUTES,
         )
 
+        self.edge_embedder = Embedder(types=edge_types, type_embedding_dim=5)
+
         self.conv1 = GINEdgeConv(
             nn_node=nn.Sequential(
-                nn.Linear(12, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+                nn.Linear(3, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
             ),
             nn_edge=nn.Sequential(
-                nn.Linear(12 + 3 + 12, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+                nn.Linear(3 + 3 + 3, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
             ),
         )
         self.conv2 = GINEdgeConv(
@@ -213,7 +215,7 @@ class Net(torch.nn.Module):
         )
 
         x_node = self.node_embedder(x_node)
-
+        x_edge = self.edge_embedder(x_edge)
         x_node, x_edge = self.conv1(x_node, edge_index, x_edge)
         x_node, x_edge = self.conv2(x_node, edge_index, x_edge)
         x_node, x_edge = self.conv3(x_node, edge_index, x_edge)
