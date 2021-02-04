@@ -18,7 +18,15 @@ import torch.nn.functional as F
 from torch_geometric.data import DataLoader
 from kglib.kgcn.examples.diagnosis.diagnosis import get_query_handles
 from grakn_dataloading.pytorch_geometric import GraknPytorchGeometricDataSet
-from transforms import networkx_transform
+
+from transforms import (
+    networkx_transform,
+    node_types,
+    edge_types,
+    CATEGORICAL_ATTRIBUTES,
+    CONTINUOUS_ATTRIBUTES,
+)
+from embedding import ThingEmbedder
 
 
 # train and test split
@@ -155,12 +163,21 @@ class GINEdgeConv(MessagePassing):
 class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
+
+        self.node_embedder = ThingEmbedder(
+            node_types=node_types,
+            type_embedding_dim=5,
+            attr_embedding_dim=6,
+            categorical_attributes=CATEGORICAL_ATTRIBUTES,
+            continuous_attributes=CONTINUOUS_ATTRIBUTES,
+        )
+
         self.conv1 = GINEdgeConv(
             nn_node=nn.Sequential(
-                nn.Linear(3, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+                nn.Linear(12, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
             ),
             nn_edge=nn.Sequential(
-                nn.Linear(3 + 3 + 3, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+                nn.Linear(12 + 3 + 12, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
             ),
         )
         self.conv2 = GINEdgeConv(
@@ -173,10 +190,18 @@ class Net(torch.nn.Module):
         )
         self.conv3 = GINEdgeConv(
             nn_node=nn.Sequential(
-                nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 3)
+                nn.Linear(16, 16),
+                nn.ReLU(),
+                nn.Linear(16, 16),
+                nn.ReLU(),
+                nn.Linear(16, 3),
             ),
             nn_edge=nn.Sequential(
-                nn.Linear(16 + 16 + 16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 3)
+                nn.Linear(16 + 16 + 16, 16),
+                nn.ReLU(),
+                nn.Linear(16, 16),
+                nn.ReLU(),
+                nn.Linear(16, 3),
             ),
         )
 
@@ -187,6 +212,8 @@ class Net(torch.nn.Module):
             data.edge_index,
         )
 
+        x_node = self.node_embedder(x_node)
+
         x_node, x_edge = self.conv1(x_node, edge_index, x_edge)
         x_node, x_edge = self.conv2(x_node, edge_index, x_edge)
         x_node, x_edge = self.conv3(x_node, edge_index, x_edge)
@@ -194,6 +221,8 @@ class Net(torch.nn.Module):
 
 
 model = Net()
+print(model)
+
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
 
 
