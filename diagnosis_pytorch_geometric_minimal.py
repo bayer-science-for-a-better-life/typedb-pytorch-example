@@ -1,6 +1,7 @@
 """
 This is a very minimalistic example of using the GraknPytorchGeometricDataSet class
-to train a network with a very basic GCN.
+to train a network with a very basic GCN. This is not for production but to
+give a very minimal example.
 """
 
 import torch
