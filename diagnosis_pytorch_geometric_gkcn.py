@@ -13,7 +13,6 @@ import torch.nn as nn
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
 
-import torch.nn.functional as F
 from torch_geometric.data import DataLoader
 from kglib.kgcn.examples.diagnosis.diagnosis import get_query_handles
 from grakn_dataloading.pytorch_geometric import GraknPytorchGeometricDataSet
@@ -139,7 +138,7 @@ class GraknConv(MessagePassing):
 
 
 class GKCN(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, edge_output_size=3, node_output_size=3, latent_size=16):
         super(GKCN, self).__init__()
 
         self.node_embedder = Embedder(
@@ -154,34 +153,46 @@ class GKCN(torch.nn.Module):
 
         self.conv1 = GraknConv(
             nn_node=nn.Sequential(
-                nn.Linear(12 + 16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+                nn.Linear(12 + latent_size, latent_size),
+                nn.ReLU(),
+                nn.Linear(latent_size, latent_size),
+                nn.ReLU(),
             ),
             nn_edge=nn.Sequential(
-                nn.Linear(12 + 6 + 12, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+                nn.Linear(12 + 6 + 12, latent_size),
+                nn.ReLU(),
+                nn.Linear(latent_size, latent_size),
+                nn.ReLU(),
             ),
         )
         self.conv2 = GraknConv(
             nn_node=nn.Sequential(
-                nn.Linear(16 + 16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+                nn.Linear(2 * latent_size, latent_size),
+                nn.ReLU(),
+                nn.Linear(latent_size, latent_size),
+                nn.ReLU(),
             ),
             nn_edge=nn.Sequential(
-                nn.Linear(16 + 16 + 16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+                nn.Linear(3 * latent_size, latent_size),
+                nn.ReLU(),
+                nn.Linear(latent_size, latent_size),
+                nn.ReLU(),
             ),
         )
         self.conv3 = GraknConv(
             nn_node=nn.Sequential(
-                nn.Linear(16 + 3, 16),
+                nn.Linear(latent_size + edge_output_size, latent_size),
                 nn.ReLU(),
-                nn.Linear(16, 16),
+                nn.Linear(latent_size, latent_size),
                 nn.ReLU(),
-                nn.Linear(16, 3),
+                nn.Linear(latent_size, node_output_size),
             ),
             nn_edge=nn.Sequential(
-                nn.Linear(16 + 16 + 16, 16),
+                nn.Linear(2 * latent_size + latent_size, latent_size),
                 nn.ReLU(),
-                nn.Linear(16, 16),
+                nn.Linear(latent_size, latent_size),
                 nn.ReLU(),
-                nn.Linear(16, 3),
+                nn.Linear(latent_size, edge_output_size),
             ),
         )
 
