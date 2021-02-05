@@ -1,4 +1,8 @@
-"""Pytorch version of kglib/kgcn/models/embedding.py trying to keep interface similar"""
+"""Pytorch version of kglib/kgcn/models/embedding.py
+
+There was a seperate ThingEmbedder and RoleEmbedder, but looking into it,
+the RoleEmbedder
+"""
 
 import torch
 import torch.nn as nn
@@ -30,7 +34,7 @@ class Embedder(nn.Module):
         super(Embedder, self).__init__()
 
         self.type_embedder = None
-        self.attr_embeddder =None
+        self.attr_embeddder = None
 
         self._encode_preexistence = encode_preexistence
         if type_embedding_dim:
@@ -63,7 +67,9 @@ class TypewiseEncoder(nn.Module):
         super(TypewiseEncoder, self).__init__()
         self._types = types
         self._embedding_dim = embedding_dim
-        self._encoders_for_types = [BlankAttribute(attr_embedding_dim=self._embedding_dim)] * len(types)
+        self._encoders_for_types = [
+            BlankAttribute(attr_embedding_dim=self._embedding_dim)
+        ] * len(types)
         self._construct_categorical_embedders(categorical_attributes)
         self._construct_continuous_embedders(continuous_attributes)
         self._encoders_for_types = nn.ModuleList(self._encoders_for_types)

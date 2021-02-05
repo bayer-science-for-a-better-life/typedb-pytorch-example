@@ -6,8 +6,16 @@ class ContinuousAttribute(nn.Module):
     def __init__(self, attr_embedding_dim):
         super(ContinuousAttribute, self).__init__()
         # for now input is size 1 (when pytorch 1.8 comes out can be made dependent on input)
+        # a three layer MLP is used like in KGCN
         # todo: when pytorch 1.8 comes out, change first Linear to LazyLinear
-        self.embedder = nn.Sequential(nn.Linear(1, attr_embedding_dim), nn.ReLU())
+        self.embedder = nn.Sequential(
+            nn.Linear(1, attr_embedding_dim),
+            nn.ReLU(),
+            nn.Linear(attr_embedding_dim, attr_embedding_dim),
+            nn.ReLU(),
+            nn.Linear(attr_embedding_dim, attr_embedding_dim),
+            nn.ReLU(),
+        )
 
     def forward(self, attribute_value):
         # todo: tensorboard histogram here of continuous attributes

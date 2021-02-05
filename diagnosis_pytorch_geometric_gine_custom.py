@@ -12,7 +12,6 @@ from torch import Tensor
 import torch.nn as nn
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
-from torch_sparse import SparseTensor
 
 import torch.nn.functional as F
 from torch_geometric.data import DataLoader
@@ -69,16 +68,8 @@ test_loader = DataLoader(test_dataset, batch_size=5, num_workers=0, shuffle=True
 loss_function = torch.nn.CrossEntropyLoss(ignore_index=0)
 
 
-class GINEdgeConv(MessagePassing):
-    r"""The modified from GINEConv in PyTorch Geometric.
-
-    .. math::
-        \mathbf{x}^{\prime}_i = h_{\mathbf{\Theta}} \left( (1 + \epsilon) \cdot
-        \mathbf{x}_i + \sum_{j \in \mathcal{N}(i)} \mathrm{ReLU}
-        ( \mathbf{x}_j + \mathbf{e}_{j,i} ) \right)
-
-    that is able to incorporate edge features :math:`\mathbf{e}_{j,i}` into
-    the aggregation procedure.
+class GraknConv(MessagePassing):
+    r"""
 
     Args:
         nn_node (torch.nn.Module): A neural network :math:`h_{\mathbf{\Theta}}` that
@@ -107,7 +98,7 @@ class GINEdgeConv(MessagePassing):
         **kwargs
     ):
         kwargs.setdefault("aggr", "add")
-        super(GINEdgeConv, self).__init__(**kwargs)
+        super(GraknConv, self).__init__(**kwargs)
         self.nn_node = nn_node
         self.nn_edge = nn_edge
         self.initial_eps = eps
@@ -128,41 +119,28 @@ class GINEdgeConv(MessagePassing):
         edge_attr: OptTensor = None,
         size: Size = None,
     ) -> Tensor:
-        """"""
 
         src, dst = edge_index
         edge_repr = torch.cat([x[src], edge_attr, x[dst]], dim=-1)
+
         edge_repr = self.nn_edge(edge_repr)
 
         if isinstance(x, Tensor):
             x: OptPairTensor = (x, x)
 
-        # Node and edge feature dimensionalites need to match.
-        if isinstance(edge_index, Tensor):
-            assert edge_attr is not None
-            assert x[0].size(-1) == edge_attr.size(-1)
-        elif isinstance(edge_index, SparseTensor):
-            assert x[0].size(-1) == edge_index.size(-1)
-
         # propagate_type: (x: OptPairTensor, edge_attr: OptTensor)
-        out = self.propagate(edge_index, x=x, edge_attr=edge_attr, size=size)
-
-        x_r = x[1]
-        if x_r is not None:
-            out += (1 + self.eps) * x_r
+        out = self.propagate(edge_index, x=x, edge_attr=edge_repr, size=size)
 
         return self.nn_node(out), edge_repr
 
     def message(self, x_j: Tensor, edge_attr: Tensor) -> Tensor:
-        return F.relu(x_j + edge_attr)
-
-    def __repr__(self):
-        return "{}(nn={})".format(self.__class__.__name__, self.nn_node)
+        concatenated = torch.cat([x_j, edge_attr], dim=-1)
+        return torch.cat([x_j, edge_attr], dim=-1)
 
 
-class Net(torch.nn.Module):
+class GKCN(torch.nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
+        super(GKCN, self).__init__()
 
         self.node_embedder = Embedder(
             types=node_types,
@@ -174,25 +152,25 @@ class Net(torch.nn.Module):
 
         self.edge_embedder = Embedder(types=edge_types, type_embedding_dim=5)
 
-        self.conv1 = GINEdgeConv(
+        self.conv1 = GraknConv(
             nn_node=nn.Sequential(
-                nn.Linear(3, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+                nn.Linear(12 + 16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
             ),
             nn_edge=nn.Sequential(
-                nn.Linear(3 + 3 + 3, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+                nn.Linear(12 + 6 + 12, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
             ),
         )
-        self.conv2 = GINEdgeConv(
+        self.conv2 = GraknConv(
             nn_node=nn.Sequential(
-                nn.Linear(16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
+                nn.Linear(16 + 16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
             ),
             nn_edge=nn.Sequential(
                 nn.Linear(16 + 16 + 16, 16), nn.ReLU(), nn.Linear(16, 16), nn.ReLU()
             ),
         )
-        self.conv3 = GINEdgeConv(
+        self.conv3 = GraknConv(
             nn_node=nn.Sequential(
-                nn.Linear(16, 16),
+                nn.Linear(16 + 3, 16),
                 nn.ReLU(),
                 nn.Linear(16, 16),
                 nn.ReLU(),
@@ -222,7 +200,7 @@ class Net(torch.nn.Module):
         return x_node, x_edge
 
 
-model = Net()
+model = GKCN()
 print(model)
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
