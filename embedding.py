@@ -33,6 +33,8 @@ class Embedder(nn.Module):
 
         super(Embedder, self).__init__()
 
+        self._out_features = bool(encode_preexistence) + type_embedding_dim + attr_embedding_dim
+
         self.type_embedder = None
         self.attr_embeddder = None
 
@@ -58,6 +60,10 @@ class Embedder(nn.Module):
         if self.attr_embeddder:
             embedding.append(self.attr_embeddder(X[:, 1], X[:, 2:]))
         return torch.cat(embedding, dim=-1)
+
+    def extra_repr(self) -> str:
+        return "out_features={}".format(self._out_features)
+
 
 
 class TypewiseEncoder(nn.Module):
@@ -90,7 +96,7 @@ class TypewiseEncoder(nn.Module):
         for attribute_type, categories in categorical_attributes.items():
             attr_typ_index = self._types.index(attribute_type)
             embedder = CategoricalAttribute(
-                num_categories=len(categories), attr_embedding_dim=self._embedding_dim
+                num_categories=len(categories), attr_embedding_dim=self._embedding_dim, name=attribute_type
             )
             self._encoders_for_types[attr_typ_index] = embedder
 
@@ -99,5 +105,5 @@ class TypewiseEncoder(nn.Module):
             return
         for attribute_type in continuous_attributes.keys():
             attr_typ_index = self._types.index(attribute_type)
-            embedder = ContinuousAttribute(attr_embedding_dim=self._embedding_dim)
+            embedder = ContinuousAttribute(attr_embedding_dim=self._embedding_dim, name=attribute_type)
             self._encoders_for_types[attr_typ_index] = embedder
