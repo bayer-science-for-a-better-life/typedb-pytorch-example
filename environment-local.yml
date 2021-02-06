@@ -11,6 +11,7 @@ dependencies:
   - pandas
   - pytorch=1.7.0
   - pip:
+    - -e ../grakn-pytorch-geometric
     - -e ../grakn-dataloading
     - -e ../kglib
     - pytest

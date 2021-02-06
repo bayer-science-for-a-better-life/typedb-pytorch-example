@@ -12,7 +12,7 @@ be nice to have decoupled from tensorflow and graphnets.
 
 For now there are only two files here:
 
-* diagnosis.py (start here. Contains Dataloader, Model and Training loop)
+* diagnosis_*.py (start here. Scripts that create dataloader, model and training loop)
 * transforms (some functions to transform the netwokx graph in kglib to
   Pytorch Geometric Data object)
 
@@ -24,6 +24,7 @@ using the environment-local.yml file:
 ```
 git clone https://github.com/graknlabs/kglib.git
 git clone https://github.com/jorenretel/grakn-dataloading.git
+git clone https://github.com/jorenretel/grakn-pytorch-geometric.git
 git clone https://github.com/jorenretel/grakn-pytorch-example.git
 
 cd grakn-pytorch-example
