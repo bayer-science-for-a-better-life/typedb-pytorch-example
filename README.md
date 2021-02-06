@@ -1,24 +1,26 @@
 Very Minimal Grakn + Pytorch Geometric Example
 ==============================================
 
-Copied directly from the diagnosis example in kglib and importing
-as much code as possible from there. 
+Copied directly from the diagnosis example in kglib.
 
-Discaimer: machine learning makes no sense now. For now the graph convolution
-done and loss is not the same one at all. We can change this to be
-more like the original graphnets example. However, it was more about
-exploring the code and seeing which part of kglib would potentially
-be nice to have decoupled from tensorflow and graphnets.
+This is just example code. The actual repository containing the pytorch geometric "port" of kgcn is in:
 
-For now there are only two files here:
+https://github.com/jorenretel/grakn-pytorch-geometric
 
-* diagnosis_*.py (start here. Scripts that create dataloader, model and training loop)
-* transforms (some functions to transform the netwokx graph in kglib to
-  Pytorch Geometric Data object)
+"grakn-pytorch-geometric" is a separate repo because I did not want to mix
+library and example code.
+
+There are only a few scripts in here:
+
+* diagnosis_pytorch_geometric_minimal.py: a very minimal example using the graph convolution from Kipf and Welling 2017. Does not make much sense in terms of machine learninf (node and edge types are not embedded properly for example.) but is showing the bare minimum of code.
+* diagnosis_pytorch_geometric_gkcn.py: replicating kgcn (Not finished yet, realized the convolutions go a bit different than I thought. Will fix this in a following commit.)
+* diagnosis_dgl.py: did not pursue this for now.
+* transforms.py (networkx graph --> pytorch geometric conversion. Still have to move part of this I think)
+
 
 ## Environment
 Here I used conda to create an environment. To recreate my setup
-clone the following 3 repositories and run create the environment
+clone the following 4 repositories and run create the environment
 using the environment-local.yml file:
 
 ```
@@ -32,9 +34,7 @@ cd grakn-pytorch-example
 conda env create -f environment-local.yml
 ```
 
-"grakn-pytorch-geometric" is a separate repo because I did not want to mix
-library and example code.
-
+### Note:
 I was not able to install grakn-client and grakn-kglib both from pypi
 because of conflicting dependencies. I have kglib "installed" in editable
 mode (by cloning from github and adding a setup.py) without the
@@ -68,10 +68,10 @@ Prepare the grakn database (only once):
 python populate_database/prepare.py
 ```
 
-Example scripts:
+and run:
 
-* diagnosis_pytorch_geometric_gcn.py: one of the simplest graph convolutions (Kipf and Welling 2017).
-* diagnosis_pytorch_geometric_custom.py: something custom, including edge features, just as a test.
-* diagnosis_dgl.py: starting to look into DGL (might be the better library for Heterogeneous Graphs).
+```
+python diagnosis_pytorch_geometric_gkcn.py
+```
 
 
