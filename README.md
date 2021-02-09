@@ -15,6 +15,7 @@ There are only a few scripts in here:
 * diagnosis_pytorch_geometric_minimal.py: a very minimal example using the graph convolution from Kipf and Welling 2017. Does not make much sense in terms of machine learninf (node and edge types are not embedded properly for example.) but is showing the bare minimum of code.
 * diagnosis_pytorch_geometric_gkcn.py: replicating kgcn (Not finished yet, realized the convolutions go a bit different than I thought. Will fix this in a following commit.)
 * diagnosis_dgl.py: did not pursue this for now.
+* diagnosis_geometric_and_lightning.py: Using Pytoch Geometric to have less verbose training code and many other goodies.  
 * transforms.py (networkx graph --> pytorch geometric conversion. Still have to move part of this I think)
 
 
@@ -68,10 +69,16 @@ Prepare the grakn database (only once):
 python populate_database/prepare.py
 ```
 
-and run:
+and run the example (with pytorch lightning to  organize the training process):
 
 ```
-python diagnosis_pytorch_geometric_gkcn.py
+python diagnosis_geometric_and_lightning.py
+```
+
+When running this specific example, logs should be written to tensorboard. To look at them:
+
+```
+tensorboard --logdir lightning_logs
 ```
 
 
