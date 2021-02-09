@@ -28,7 +28,7 @@ class Metrics(nn.Module):
         self._metrics = {
             "node_accuracy": self.node_accuracy,
             "edge_accuracy": self.edge_accuracy,
-            "fraction_solved": self.fraction_solved
+            "fraction_solved": self.fraction_solved,
         }
         self._metrics = self._prepend_dict_keys(self._metrics, prepend)
 
