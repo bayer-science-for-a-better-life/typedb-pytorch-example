@@ -15,26 +15,8 @@ from transforms import (
     CONTINUOUS_ATTRIBUTES,
 )
 
-
 import pytorch_lightning as pl
 
-class Metrics(nn.Module):
-
-    def __init__(self, prepend=""):
-        super().__init__()
-        self._prepend = prepend
-        self.node_accuracy = lightning_metrics.Accuracy(ignore_index=0)
-        self.edge_accuracy = lightning_metrics.Accuracy(ignore_index=0)
-        self._metrics = {"node_accuracy": self.node_accuracy, "edge_accuracy": self.edge_accuracy}
-        self._metrics = self._prepend_dict_keys(self._metrics, prepend)
-
-    def forward(self, node_pred, edge_pred, node_target, edge_target, graph_id):
-        self.node_accuracy(node_pred, node_target)
-        self.edge_accuracy(edge_pred, edge_target)
-        return self._metrics
-
-    def _prepend_dict_keys(self, dictionary, prepend):
-        return {"{}_{}".format(prepend, key): value for key, value in dictionary.items()}
 
 class GraphModel(pl.LightningModule):
     def __init__(self):
