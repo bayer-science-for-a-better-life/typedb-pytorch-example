@@ -1,10 +1,11 @@
 import torch
+import torch.nn as nn
 import torch.functional as F
 from torch_geometric.data import DataLoader
 from kglib.kgcn.examples.diagnosis.diagnosis import get_query_handles
 from grakn_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
 from grakn_pytorch_geometric.models.core import KGCN
-from grakn_pytorch_geometric import metrics
+from grakn_pytorch_geometric.metrics import metrics, lightning_metrics
 
 from transforms import (
     networkx_transform,
@@ -17,6 +18,23 @@ from transforms import (
 
 import pytorch_lightning as pl
 
+class Metrics(nn.Module):
+
+    def __init__(self, prepend=""):
+        super().__init__()
+        self._prepend = prepend
+        self.node_accuracy = lightning_metrics.Accuracy(ignore_index=0)
+        self.edge_accuracy = lightning_metrics.Accuracy(ignore_index=0)
+        self._metrics = {"node_accuracy": self.node_accuracy, "edge_accuracy": self.edge_accuracy}
+        self._metrics = self._prepend_dict_keys(self._metrics, prepend)
+
+    def forward(self, node_pred, edge_pred, node_target, edge_target, graph_id):
+        self.node_accuracy(node_pred, node_target)
+        self.edge_accuracy(edge_pred, edge_target)
+        return self._metrics
+
+    def _prepend_dict_keys(self, dictionary, prepend):
+        return {"{}_{}".format(prepend, key): value for key, value in dictionary.items()}
 
 class GraphModel(pl.LightningModule):
     def __init__(self):
@@ -29,6 +47,10 @@ class GraphModel(pl.LightningModule):
         )
 
         self.loss_function = torch.nn.CrossEntropyLoss(ignore_index=0)
+        self.train_accuracy_node = lightning_metrics.Accuracy(ignore_index=0)
+        self.train_accuracy_edge = lightning_metrics.Accuracy(ignore_index=0)
+        self.val_accuracy_node = lightning_metrics.Accuracy(ignore_index=0)
+        self.val_accuracy_edge = lightning_metrics.Accuracy(ignore_index=0)
 
     def forward(self, x):
         predictions = self.model(x)
@@ -39,14 +61,21 @@ class GraphModel(pl.LightningModule):
         node_loss = self.loss_function(node_prediction, batch.y)
         edge_loss = self.loss_function(edge_prediction, batch.y_edge)
         loss = (node_loss + edge_loss) * 0.5
-        acc = metrics.existence_accuracy(node_prediction, batch.y, ignore_index=0)
+
+
+        self.train_accuracy_node(node_prediction, batch.y)
+        self.train_accuracy_edge(edge_prediction, batch.y_edge)
+
         fraction_solved = metrics.fraction_solved(
             node_prediction, batch.y, batch.batch, ignore_index=0
         )
+
+        self.log("train_accuracy_node", self.train_accuracy_node)
+        self.log("train_accuracy_edge", self.train_accuracy_edge)
+
         self.log("train_loss", loss)
         self.log("train_node_loss", node_loss)
         self.log("train_edge_loss", edge_loss)
-        self.log("train_accuracy_node", acc)
         self.log("train_fraction_solved", fraction_solved)
         return loss
 
@@ -55,14 +84,20 @@ class GraphModel(pl.LightningModule):
         node_loss = self.loss_function(node_prediction, batch.y)
         edge_loss = self.loss_function(edge_prediction, batch.y_edge)
         loss = (node_loss + edge_loss) * 0.5
-        acc = metrics.existence_accuracy(node_prediction, batch.y, ignore_index=0)
+
+        self.val_accuracy_node(node_prediction, batch.y)
+        self.val_accuracy_edge(edge_prediction, batch.y_edge)
+
         fraction_solved = metrics.fraction_solved(
             node_prediction, batch.y, batch.batch, ignore_index=0
         )
+
+        self.log("val_accuracy_node", self.train_accuracy_node)
+        self.log("val_accuracy_edge", self.train_accuracy_edge)
+
         self.log("val_loss", loss)
         self.log("val_node_loss", node_loss)
         self.log("val_edge_loss", edge_loss)
-        self.log("val_accuracy_node", acc)
         self.log("val_fraction_solved", fraction_solved)
         return loss
 
@@ -110,5 +145,8 @@ trainer = pl.Trainer()
 
 
 if __name__ == '__main__':
+    #met = Metrics()
+
+
     print(model)
     trainer.fit(model, train_dataloader=train_dataloader, val_dataloaders=val_dataloader)
