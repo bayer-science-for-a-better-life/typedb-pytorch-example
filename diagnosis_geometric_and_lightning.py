@@ -18,6 +18,32 @@ from transforms import (
 import pytorch_lightning as pl
 
 
+class Metrics(nn.Module):
+    def __init__(self, prepend=""):
+        super().__init__()
+        self._prepend = prepend
+        self.node_accuracy = lightning_metrics.Accuracy(ignore_index=0)
+        self.edge_accuracy = lightning_metrics.Accuracy(ignore_index=0)
+        self.fraction_solved = lightning_metrics.FractionSolved(ignore_index=0)
+        self._metrics = {
+            "node_accuracy": self.node_accuracy,
+            "edge_accuracy": self.edge_accuracy,
+            "fraction_solved": self.fraction_solved
+        }
+        self._metrics = self._prepend_dict_keys(self._metrics, prepend)
+
+    def forward(self, node_pred, edge_pred, node_target, edge_target, batch):
+        self.node_accuracy(node_pred, node_target)
+        self.edge_accuracy(edge_pred, edge_target)
+        self.fraction_solved(node_pred, node_target, batch)
+        return self._metrics
+
+    def _prepend_dict_keys(self, dictionary, prepend):
+        return {
+            "{}_{}".format(prepend, key): value for key, value in dictionary.items()
+        }
+
+
 class GraphModel(pl.LightningModule):
     def __init__(self):
         super().__init__()
@@ -29,10 +55,8 @@ class GraphModel(pl.LightningModule):
         )
 
         self.loss_function = torch.nn.CrossEntropyLoss(ignore_index=0)
-        self.train_accuracy_node = lightning_metrics.Accuracy(ignore_index=0)
-        self.train_accuracy_edge = lightning_metrics.Accuracy(ignore_index=0)
-        self.val_accuracy_node = lightning_metrics.Accuracy(ignore_index=0)
-        self.val_accuracy_edge = lightning_metrics.Accuracy(ignore_index=0)
+        self.train_metrics = Metrics(prepend="train")
+        self.val_metrics = Metrics(prepend="val")
 
     def forward(self, x):
         predictions = self.model(x)
@@ -44,21 +68,14 @@ class GraphModel(pl.LightningModule):
         edge_loss = self.loss_function(edge_prediction, batch.y_edge)
         loss = (node_loss + edge_loss) * 0.5
 
-
-        self.train_accuracy_node(node_prediction, batch.y)
-        self.train_accuracy_edge(edge_prediction, batch.y_edge)
-
-        fraction_solved = metrics.fraction_solved(
-            node_prediction, batch.y, batch.batch, ignore_index=0
+        self.log_dict(
+            self.train_metrics(
+                node_prediction, edge_prediction, batch.y, batch.y_edge, batch.batch
+            ),
         )
-
-        self.log("train_accuracy_node", self.train_accuracy_node)
-        self.log("train_accuracy_edge", self.train_accuracy_edge)
-
         self.log("train_loss", loss)
         self.log("train_node_loss", node_loss)
         self.log("train_edge_loss", edge_loss)
-        self.log("train_fraction_solved", fraction_solved)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -67,26 +84,20 @@ class GraphModel(pl.LightningModule):
         edge_loss = self.loss_function(edge_prediction, batch.y_edge)
         loss = (node_loss + edge_loss) * 0.5
 
-        self.val_accuracy_node(node_prediction, batch.y)
-        self.val_accuracy_edge(edge_prediction, batch.y_edge)
-
-        fraction_solved = metrics.fraction_solved(
-            node_prediction, batch.y, batch.batch, ignore_index=0
+        self.log_dict(
+            self.val_metrics(
+                node_prediction, edge_prediction, batch.y, batch.y_edge, batch.batch
+            ),
         )
-
-        self.log("val_accuracy_node", self.train_accuracy_node)
-        self.log("val_accuracy_edge", self.train_accuracy_edge)
-
         self.log("val_loss", loss)
         self.log("val_node_loss", node_loss)
         self.log("val_edge_loss", edge_loss)
-        self.log("val_fraction_solved", fraction_solved)
         return loss
-
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=0.001, weight_decay=5e-4)
         return optimizer
+
 
 model = GraphModel()
 
@@ -123,12 +134,10 @@ val_dataset = GraknPytorchGeometricDataSet(
 # Use the test dataset to create a validation dataloader
 val_dataloader = DataLoader(val_dataset, batch_size=5, num_workers=0, shuffle=True)
 
-trainer = pl.Trainer()
 
-
-if __name__ == '__main__':
-    #met = Metrics()
-
-
+if __name__ == "__main__":
     print(model)
-    trainer.fit(model, train_dataloader=train_dataloader, val_dataloaders=val_dataloader)
+    trainer = pl.Trainer(fast_dev_run=False)
+    trainer.fit(
+        model, train_dataloader=train_dataloader, val_dataloaders=val_dataloader
+    )
