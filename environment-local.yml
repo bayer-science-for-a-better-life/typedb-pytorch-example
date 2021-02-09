@@ -10,6 +10,7 @@ dependencies:
   - matplotlib
   - pandas
   - pytorch=1.7.0
+  - pytorch-lightning
   - pip:
     - -e ../grakn-pytorch-geometric
     - -e ../grakn-dataloading

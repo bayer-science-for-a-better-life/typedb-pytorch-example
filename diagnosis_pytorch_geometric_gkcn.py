@@ -4,10 +4,11 @@ KGCN in Pytorch Geometric
 
 import torch
 from torch_geometric.data import DataLoader
-from grakn_pytorch_geometric import metrics
 from kglib.kgcn.examples.diagnosis.diagnosis import get_query_handles
 from grakn_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
 from grakn_pytorch_geometric.models.core import KGCN
+from grakn_pytorch_geometric import metrics
+
 
 from transforms import (
     networkx_transform,
@@ -78,13 +79,14 @@ def train():
             edge_loss = loss_function(edge_prediction, data.y_edge)
             loss = (node_loss + edge_loss) * 0.5
             acc = metrics.existence_accuracy(node_prediction, data.y, ignore_index=0)
-            fraction_solved = metrics.fraction_solved(node_prediction, data.y, data.batch, ignore_index=0)
+            fraction_solved = metrics.fraction_solved(
+                node_prediction, data.y, data.batch, ignore_index=0
+            )
             print(
                 "epoch: {}, step: {}, loss {}, node loss: {}, edge_loss: {}, node accuracy: {}, fraction_solved {}".format(
                     epoch, i, loss, node_loss, edge_loss, acc, fraction_solved
                 )
             )
-
 
             loss.backward()
             optimizer.step()
@@ -98,8 +100,12 @@ def train():
             node_prediction, edge_prediction = model(data)
             test_node_loss += loss_function(node_prediction, data.y)
             test_edge_loss += loss_function(edge_prediction, data.y_edge)
-            test_acc_sum += metrics.existence_accuracy(node_prediction, data.y, ignore_index=0)
-            fraction_solved += metrics.fraction_solved(node_prediction, data.y, data.batch, ignore_index=0)
+            test_acc_sum += metrics.existence_accuracy(
+                node_prediction, data.y, ignore_index=0
+            )
+            fraction_solved += metrics.fraction_solved(
+                node_prediction, data.y, data.batch, ignore_index=0
+            )
 
         print(
             "epoch: {},Test, loss {}, node loss: {}, edge_loss: {}, node accuracy: {}, fraction_solved {}".format(
@@ -108,7 +114,7 @@ def train():
                 test_node_loss / (i + 1),
                 test_edge_loss / (i + 1),
                 test_acc_sum / (i + 1),
-                fraction_solved / (i + 1)
+                fraction_solved / (i + 1),
             )
         )
 
