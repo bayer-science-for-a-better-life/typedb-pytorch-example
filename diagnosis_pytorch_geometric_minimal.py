@@ -6,14 +6,41 @@ give a very minimal example.
 
 import torch
 import torch.nn.functional as F
+from grakn.client import GraknClient
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import GCNConv
 from kglib.kgcn.examples.diagnosis.diagnosis import get_query_handles
-from grakn_dataloading.pytorch_geometric import GraknPytorchGeometricDataSet
-from transforms import networkx_transform
 
+from grakn_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
+from grakn_pytorch_geometric.data.transforms import StandardKGCNNetworkxTransform
+
+from about_this_graph import (
+    get_node_types,
+    get_edge_types,
+    CATEGORICAL_ATTRIBUTES,
+    CONTINUOUS_ATTRIBUTES,
+    TYPES_AND_ROLES_TO_OBFUSCATE,
+)
+
+
+client = GraknClient(uri="localhost:48555")
+session = client.session(keyspace="diagnosis")
+node_types = get_node_types(session)
+edge_types = get_edge_types(session)
 
 example_indices = list(range(100))
+
+# create the transformation applied to
+# the networkx graph before it is ingested
+# into Pytorch Geometric
+networkx_transform = StandardKGCNNetworkxTransform(
+    node_types=node_types,
+    edge_types=edge_types,
+    target_name="solution",
+    obfuscate=TYPES_AND_ROLES_TO_OBFUSCATE,
+    categorical=CATEGORICAL_ATTRIBUTES,
+    continuous=CONTINUOUS_ATTRIBUTES,
+)
 
 # Create a dataset
 grakn_dataset = GraknPytorchGeometricDataSet(

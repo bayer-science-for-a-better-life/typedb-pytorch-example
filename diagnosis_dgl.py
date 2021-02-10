@@ -4,12 +4,25 @@ Example in DGL that I started but did not finish. Focussed on Pytorch Geometric 
 
 import torch
 import dgl
+from grakn.client import GraknClient
 from grakn_dataloading.networkx import GraknNetworkxDataSet
-
+from grakn_pytorch_geometric.data.transforms import StandardKGCNNetworkxTransform
 from torch.utils.data import DataLoader
 from kglib.kgcn.examples.diagnosis.diagnosis import get_query_handles
-from transforms import networkx_transform
 
+from about_this_graph import (
+    get_node_types,
+    get_edge_types,
+    CATEGORICAL_ATTRIBUTES,
+    CONTINUOUS_ATTRIBUTES,
+    TYPES_AND_ROLES_TO_OBFUSCATE,
+)
+
+
+client = GraknClient(uri="localhost:48555")
+session = client.session(keyspace="diagnosis")
+node_types = get_node_types(session)
+edge_types = get_edge_types(session)
 
 example_indices = list(range(20))
 
@@ -57,6 +70,18 @@ class GraknDGLDataSet(torch.utils.data.Dataset):
             self._cache[idx] = graph
         return graph
 
+
+# create the transformation applied to
+# the networkx graph before it is ingested
+# into Pytorch Geometric
+networkx_transform = StandardKGCNNetworkxTransform(
+    node_types=node_types,
+    edge_types=edge_types,
+    target_name="solution",
+    obfuscate=TYPES_AND_ROLES_TO_OBFUSCATE,
+    categorical=CATEGORICAL_ATTRIBUTES,
+    continuous=CONTINUOUS_ATTRIBUTES,
+)
 
 grakn_dataset = GraknDGLDataSet(
     example_indices=example_indices,

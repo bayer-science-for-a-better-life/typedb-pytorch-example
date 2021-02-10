@@ -16,7 +16,7 @@ There are only a few scripts in here:
 * diagnosis_pytorch_geometric_gkcn.py: replicating kgcn (Not finished yet, realized the convolutions go a bit different than I thought. Will fix this in a following commit.)
 * diagnosis_dgl.py: did not pursue this for now.
 * diagnosis_geometric_and_lightning.py: Using Pytoch Geometric to have less verbose training code and many other goodies.  
-* transforms.py (networkx graph --> pytorch geometric conversion. Still have to move part of this I think)
+* about_this_graph.py:facts about node and edge (attributes) in diagnosis graph used in the examples.
 
 
 ## Environment
