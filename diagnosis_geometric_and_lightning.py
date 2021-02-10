@@ -29,6 +29,11 @@ edge_types = get_edge_types(session)
 
 
 class Metrics(nn.Module):
+    """
+    Just grouping together all metrics we are interested in logging
+    so we can easily log the same metrics for the train and the
+    validation set.
+    """
     def __init__(self, prepend=""):
         super().__init__()
         self._prepend = prepend
@@ -55,6 +60,10 @@ class Metrics(nn.Module):
 
 
 class GraphModel(pl.LightningModule):
+    """
+    Pytorch Lightning Module with the model and training
+    abstractions. See https://www.pytorchlightning.ai/ .
+    """
     def __init__(self):
         super().__init__()
         self.model = KGCN(
