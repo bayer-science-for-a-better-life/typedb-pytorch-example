@@ -10,12 +10,12 @@ https://github.com/jorenretel/grakn-pytorch-geometric
 "grakn-pytorch-geometric" is a separate repo because I did not want to mix
 library and example code.
 
-There are only a few scripts in here:
+There are only a few scripts in here ():
 
-* diagnosis_pytorch_geometric_minimal.py: a very minimal example using the graph convolution from Kipf and Welling 2017. Does not make much sense in terms of machine learninf (node and edge types are not embedded properly for example.) but is showing the bare minimum of code.
-* diagnosis_pytorch_geometric_gkcn.py: replicating kgcn (Not finished yet, realized the convolutions go a bit different than I thought. Will fix this in a following commit.)
+* diagnosis_geometric_and_lightning.py: replicating KGCN in Pytorch Geometric, using Pytoch Lightning to have less verbose training code and many other goodies.
+* diagnosis_pytorch_geometric_minimal.py: a very minimal example using the graph convolution from Kipf and Welling 2017. Does not make much sense in terms of machine learning (node and edge types are not embedded properly for example.) but is showing the bare minimum of code.
+* diagnosis_pytorch_geometric_gkcn.py: replicating kgcn.
 * diagnosis_dgl.py: did not pursue this for now.
-* diagnosis_geometric_and_lightning.py: Using Pytoch Geometric to have less verbose training code and many other goodies.  
 * about_this_graph.py:facts about node and edge (attributes) in diagnosis graph used in the examples.
 
 
@@ -56,6 +56,7 @@ setup(
     description=''
 )
 ```
+
 
 ## Run the example
 
