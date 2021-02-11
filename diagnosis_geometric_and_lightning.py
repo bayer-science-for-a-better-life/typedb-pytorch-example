@@ -11,7 +11,9 @@ from kglib.kgcn.examples.diagnosis.diagnosis import get_query_handles
 from grakn_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
 from grakn_pytorch_geometric.data.transforms import StandardKGCNNetworkxTransform
 from grakn_pytorch_geometric.models.core import KGCN
-from grakn_pytorch_geometric.metrics import metrics, lightning_metrics
+from grakn_pytorch_geometric.utils.lightning_metrics import Accuracy, FractionSolved
+from grakn_pytorch_geometric.utils.loss import MultiStepLoss
+
 
 from about_this_graph import (
     get_node_types,
@@ -34,12 +36,13 @@ class Metrics(nn.Module):
     so we can easily log the same metrics for the train and the
     validation set.
     """
+
     def __init__(self, prepend=""):
         super().__init__()
         self._prepend = prepend
-        self.node_accuracy = lightning_metrics.Accuracy(ignore_index=0)
-        self.edge_accuracy = lightning_metrics.Accuracy(ignore_index=0)
-        self.fraction_solved = lightning_metrics.FractionSolved(ignore_index=0)
+        self.node_accuracy = Accuracy(ignore_index=0)
+        self.edge_accuracy = Accuracy(ignore_index=0)
+        self.fraction_solved = FractionSolved(ignore_index=0)
         self._metrics = {
             "node_accuracy": self.node_accuracy,
             "edge_accuracy": self.edge_accuracy,
@@ -64,6 +67,7 @@ class GraphModel(pl.LightningModule):
     Pytorch Lightning Module with the model and training
     abstractions. See https://www.pytorchlightning.ai/ .
     """
+
     def __init__(self):
         super().__init__()
         self.model = KGCN(
@@ -73,7 +77,7 @@ class GraphModel(pl.LightningModule):
             continuous_attributes=CONTINUOUS_ATTRIBUTES,
         )
 
-        self.loss_function = torch.nn.CrossEntropyLoss(ignore_index=0)
+        self.loss_function = MultiStepLoss(torch.nn.CrossEntropyLoss(ignore_index=0))
         self.train_metrics = Metrics(prepend="train")
         self.val_metrics = Metrics(prepend="val")
 
@@ -82,14 +86,20 @@ class GraphModel(pl.LightningModule):
         return F.softmax(predictions)
 
     def training_step(self, batch, batch_idx):
-        node_prediction, edge_prediction = self.model(batch)
-        node_loss = self.loss_function(node_prediction, batch.y)
-        edge_loss = self.loss_function(edge_prediction, batch.y_edge)
+        node_prediction, edge_prediction = self.model(
+            batch, steps=5, return_all_steps=True
+        )
+        node_loss = self.loss_function(node_prediction, batch.y, steps=5)
+        edge_loss = self.loss_function(edge_prediction, batch.y_edge, steps=5)
         loss = (node_loss + edge_loss) * 0.5
 
         self.log_dict(
             self.train_metrics(
-                node_prediction, edge_prediction, batch.y, batch.y_edge, batch.batch
+                node_prediction[:, :, -1],
+                edge_prediction[:, :, -1],
+                batch.y,
+                batch.y_edge,
+                batch.batch,
             ),
         )
         self.log("train_loss", loss)

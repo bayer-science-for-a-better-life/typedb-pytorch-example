@@ -11,7 +11,7 @@ from kglib.kgcn.examples.diagnosis.diagnosis import get_query_handles
 from grakn_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
 from grakn_pytorch_geometric.data.transforms import StandardKGCNNetworkxTransform
 from grakn_pytorch_geometric.models.core import KGCN
-from grakn_pytorch_geometric.metrics import metrics
+from grakn_pytorch_geometric.utils import metrics
 
 from about_this_graph import (
     get_node_types,

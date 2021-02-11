@@ -34,7 +34,8 @@ TYPES_AND_ROLES_TO_OBFUSCATE = {
 }
 
 
-#TODO: the following should probably go somewhere else:
+# TODO: the following should probably go somewhere else:
+
 
 def get_node_types(session):
     with session.transaction().read() as tx:
@@ -43,6 +44,7 @@ def get_node_types(session):
         [node_types.remove(el) for el in TYPES_TO_IGNORE]
     print(f"Found node types: {node_types}")
     return node_types
+
 
 def get_edge_types(session):
     with session.transaction().read() as tx:
