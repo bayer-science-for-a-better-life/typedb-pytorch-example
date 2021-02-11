@@ -6,8 +6,6 @@ from torch_geometric.data import DataLoader
 
 from grakn.client import GraknClient
 
-from kglib.kgcn.examples.diagnosis.diagnosis import get_query_handles
-
 from grakn_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
 from grakn_pytorch_geometric.data.transforms import StandardKGCNNetworkxTransform
 from grakn_pytorch_geometric.models.core import KGCN
@@ -16,6 +14,7 @@ from grakn_pytorch_geometric.utils.loss import MultiStepLoss
 
 
 from about_this_graph import (
+    get_query_handles,
     get_node_types,
     get_edge_types,
     CATEGORICAL_ATTRIBUTES,
@@ -40,9 +39,9 @@ class Metrics(nn.Module):
     def __init__(self, prepend=""):
         super().__init__()
         self._prepend = prepend
-        self.node_accuracy = Accuracy(ignore_index=0)
-        self.edge_accuracy = Accuracy(ignore_index=0)
-        self.fraction_solved = FractionSolved(ignore_index=0)
+        self.node_accuracy = Accuracy(ignore_index=-1)
+        self.edge_accuracy = Accuracy(ignore_index=-1)
+        self.fraction_solved = FractionSolved(ignore_index=-1)
         self._metrics = {
             "node_accuracy": self.node_accuracy,
             "edge_accuracy": self.edge_accuracy,
@@ -75,9 +74,11 @@ class GraphModel(pl.LightningModule):
             edge_types=edge_types,
             categorical_attributes=CATEGORICAL_ATTRIBUTES,
             continuous_attributes=CONTINUOUS_ATTRIBUTES,
+            edge_output_size=2,
+            node_output_size=2,
         )
 
-        self.loss_function = MultiStepLoss(torch.nn.CrossEntropyLoss(ignore_index=0))
+        self.loss_function = MultiStepLoss(torch.nn.CrossEntropyLoss(ignore_index=-1))
         self.train_metrics = Metrics(prepend="train")
         self.val_metrics = Metrics(prepend="val")
 
