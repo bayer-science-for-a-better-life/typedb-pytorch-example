@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.functional as F
 import pytorch_lightning as pl
+from pytorch_lightning.metrics.classification import F1, Accuracy
 from torch_geometric.data import DataLoader
 
 from grakn.client import GraknClient
@@ -9,7 +10,10 @@ from grakn.client import GraknClient
 from grakn_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
 from grakn_pytorch_geometric.data.transforms import StandardKGCNNetworkxTransform
 from grakn_pytorch_geometric.models.core import KGCN
-from grakn_pytorch_geometric.utils.lightning_metrics import Accuracy, FractionSolved
+from grakn_pytorch_geometric.utils.lightning_metrics import (
+    FractionSolved,
+    IgnoreIndexMetric,
+)
 from grakn_pytorch_geometric.utils.loss import MultiStepLoss
 
 
@@ -39,13 +43,15 @@ class Metrics(nn.Module):
     def __init__(self, prepend=""):
         super().__init__()
         self._prepend = prepend
-        self.node_accuracy = Accuracy(ignore_index=-1)
-        self.edge_accuracy = Accuracy(ignore_index=-1)
+        self.node_accuracy = IgnoreIndexMetric(Accuracy(), ignore_index=-1)
+        self.edge_accuracy = IgnoreIndexMetric(Accuracy(), ignore_index=-1)
         self.fraction_solved = FractionSolved(ignore_index=-1)
+        self.f1 = IgnoreIndexMetric(F1(num_classes=2), ignore_index=-1)
         self._metrics = {
             "node_accuracy": self.node_accuracy,
             "edge_accuracy": self.edge_accuracy,
             "fraction_solved": self.fraction_solved,
+            "f1": self.f1,
         }
         self._metrics = self._prepend_dict_keys(self._metrics, prepend)
 
@@ -53,6 +59,7 @@ class Metrics(nn.Module):
         self.node_accuracy(node_pred, node_target)
         self.edge_accuracy(edge_pred, edge_target)
         self.fraction_solved(node_pred, node_target, batch)
+        self.f1(node_pred, node_target)
         return self._metrics
 
     def _prepend_dict_keys(self, dictionary, prepend):
