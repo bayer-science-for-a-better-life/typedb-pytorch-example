@@ -6,26 +6,29 @@ import torch
 from torch_geometric.data import DataLoader
 
 from grakn.client import GraknClient
-from kglib.kgcn.examples.diagnosis.diagnosis import get_query_handles
+from grakn.rpc.session import SessionType
+
+from kglib.kgcn_data_loader.transform.standard_kgcn_transform import StandardKGCNNetworkxTransform
+from kglib.kgcn_data_loader.utils import get_edge_types_for_training, get_node_types_for_training
 
 from grakn_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
-from grakn_pytorch_geometric.data.transforms import StandardKGCNNetworkxTransform
 from grakn_pytorch_geometric.models.core import KGCN
 from grakn_pytorch_geometric.utils import metrics
 
 from about_this_graph import (
-    get_node_types,
-    get_edge_types,
+    get_query_handles,
     CATEGORICAL_ATTRIBUTES,
     CONTINUOUS_ATTRIBUTES,
     TYPES_AND_ROLES_TO_OBFUSCATE,
+    TYPES_TO_IGNORE,
+    ROLES_TO_IGNORE
 )
 
 
-client = GraknClient(uri="localhost:48555")
-session = client.session(keyspace="diagnosis")
-node_types = get_node_types(session)
-edge_types = get_edge_types(session)
+client = GraknClient.core(address="localhost:1729")
+session = client.session(SessionType.DATA, database="diagnosis")
+node_types = get_node_types_for_training(session, TYPES_TO_IGNORE)
+edge_types = get_edge_types_for_training(session, ROLES_TO_IGNORE)
 
 # train and test split
 example_indices = list(range(80))
@@ -49,7 +52,7 @@ grakn_dataset = GraknPytorchGeometricDataSet(
     example_indices=example_indices,
     get_query_handles_for_id=get_query_handles,
     infer=True,
-    uri="localhost:48555",
+    uri="localhost:1729",
     keyspace="diagnosis",
     networkx_transform=networkx_transform,
     caching=True,
@@ -63,7 +66,7 @@ test_dataset = GraknPytorchGeometricDataSet(
     example_indices=test_indices,
     get_query_handles_for_id=get_query_handles,
     infer=True,
-    uri="localhost:48555",
+    uri="localhost:1729",
     keyspace="diagnosis",
     networkx_transform=networkx_transform,
     caching=True,

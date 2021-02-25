@@ -16,7 +16,7 @@ dependencies:
     - -e ../grakn-dataloading
     - -e ../kglib
     - pytest
-    - grakn-client
+    - grakn-client==2.0.0-alpha-8
     - torch-scatter -f https://pytorch-geometric.com/whl/torch-1.7.0+cpu.html
     - torch-sparse -f https://pytorch-geometric.com/whl/torch-1.7.0+cpu.html
     - torch-cluster -f https://pytorch-geometric.com/whl/torch-1.7.0+cpu.html
