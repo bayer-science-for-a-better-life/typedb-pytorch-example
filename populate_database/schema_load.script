@@ -1,0 +1,5 @@
+database delete diagnosis
+database create diagnosis
+transaction diagnosis schema write
+source schema.gql
+commit
