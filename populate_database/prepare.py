@@ -15,7 +15,7 @@ def main(number_of_examples=100):
 
     client = GraknClient.core("localhost:1729")
 
-    if DATABASENAME in client.databases().all():
+    if any(DATABASENAME in str(db) for db in client.databases().all()):
         subprocess.call(
             ["/Users/henning.kuich@bayer.com/tools/grakn-core-all-mac-2.0.0-alpha-8/grakn", "console", "--script",
              "schema_reload.script"]
