@@ -12,11 +12,19 @@ DATABASENAME = "diagnosis"
 
 
 def main(number_of_examples=100):
-    subprocess.call(
-        ["/Users/henning.kuich@bayer.com/tools/grakn-core-all-mac-2.0.0-alpha-8/grakn", "console", "--script", "schema_load.script"]
-    )
 
     client = GraknClient.core("localhost:1729")
+
+    if DATABASENAME in client.databases().all():
+        subprocess.call(
+            ["/Users/henning.kuich@bayer.com/tools/grakn-core-all-mac-2.0.0-alpha-8/grakn", "console", "--script",
+             "schema_reload.script"]
+        )
+    else:
+        subprocess.call(
+            ["/Users/henning.kuich@bayer.com/tools/grakn-core-all-mac-2.0.0-alpha-8/grakn", "console", "--script",
+             "schema_load.script"]
+        )
 
     with open ("data.gql", "r") as data_file:
         data = data_file.readlines()
