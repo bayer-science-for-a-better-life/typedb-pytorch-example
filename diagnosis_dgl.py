@@ -9,8 +9,13 @@ import dgl
 from grakn.client import GraknClient
 from grakn.rpc.session import SessionType
 
-from kglib.kgcn_data_loader.transform.standard_kgcn_transform import StandardKGCNNetworkxTransform
-from kglib.kgcn_data_loader.utils import get_edge_types_for_training, get_node_types_for_training
+from kglib.kgcn_data_loader.transform.standard_kgcn_transform import (
+    StandardKGCNNetworkxTransform,
+)
+from kglib.kgcn_data_loader.utils import (
+    get_edge_types_for_training,
+    get_node_types_for_training,
+)
 
 from grakn_dataloading.networkx import GraknNetworkxDataSet
 
@@ -20,7 +25,7 @@ from about_this_graph import (
     CONTINUOUS_ATTRIBUTES,
     TYPES_AND_ROLES_TO_OBFUSCATE,
     TYPES_TO_IGNORE,
-    ROLES_TO_IGNORE
+    ROLES_TO_IGNORE,
 )
 
 

@@ -1,5 +1,5 @@
 from kglib.utils.grakn.synthetic.examples.diagnosis.generate import (
-    generate_example_graphs
+    generate_example_graphs,
 )
 
 from grakn.client import GraknClient
@@ -16,17 +16,11 @@ def main(number_of_examples=100):
     client = GraknClient.core("localhost:1729")
 
     if any(DATABASENAME in str(db) for db in client.databases().all()):
-        subprocess.call(
-            ["grakn", "console", "--script",
-             "schema_reload.script"]
-        )
+        subprocess.call(["grakn", "console", "--script", "schema_reload.script"])
     else:
-        subprocess.call(
-            ["grakn", "console", "--script",
-             "schema_load.script"]
-        )
+        subprocess.call(["grakn", "console", "--script", "schema_load.script"])
 
-    with open ("data.gql", "r") as data_file:
+    with open("data.gql", "r") as data_file:
         data = data_file.readlines()
         with client.session(DATABASENAME, SessionType.DATA) as session:
             for line in data:

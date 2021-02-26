@@ -12,8 +12,13 @@ from grakn.rpc.session import SessionType
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import GCNConv
 
-from kglib.kgcn_data_loader.transform.standard_kgcn_transform import StandardKGCNNetworkxTransform
-from kglib.kgcn_data_loader.utils import get_edge_types_for_training, get_node_types_for_training
+from kglib.kgcn_data_loader.transform.standard_kgcn_transform import (
+    StandardKGCNNetworkxTransform,
+)
+from kglib.kgcn_data_loader.utils import (
+    get_edge_types_for_training,
+    get_node_types_for_training,
+)
 
 from grakn_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
 
@@ -24,7 +29,7 @@ from about_this_graph import (
     CONTINUOUS_ATTRIBUTES,
     TYPES_AND_ROLES_TO_OBFUSCATE,
     TYPES_TO_IGNORE,
-    ROLES_TO_IGNORE
+    ROLES_TO_IGNORE,
 )
 
 
@@ -101,6 +106,7 @@ def train():
             print("epoch: {}, step: {}, loss: {}".format(epoch, i, loss))
             loss.backward()
             optimizer.step()
+
 
 if __name__ == "__main__":
     train()

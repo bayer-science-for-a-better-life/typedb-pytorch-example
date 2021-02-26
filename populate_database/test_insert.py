@@ -3,9 +3,10 @@ from grakn.rpc.session import SessionType
 from grakn.rpc.transaction import TransactionType
 import json
 
-q = '''match $x isa {}; get $x; limit 5; '''
+q = """match $x isa {}; get $x; limit 5; """
 
-def execute_query(query:str):
+
+def execute_query(query: str):
     with GraknClient.core("localhost:1729") as client:
         with client.session("diagnosis", SessionType.DATA) as session:
             with session.transaction(TransactionType.READ) as txn:

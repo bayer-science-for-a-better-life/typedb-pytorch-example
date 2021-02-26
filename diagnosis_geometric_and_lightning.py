@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.functional as F
+import torch.nn.functional as F
 import pytorch_lightning as pl
 from pytorch_lightning.metrics.classification import F1, Accuracy
 from torch_geometric.data import DataLoader
@@ -8,8 +8,13 @@ from torch_geometric.data import DataLoader
 from grakn.client import GraknClient
 from grakn.rpc.session import SessionType
 
-from kglib.kgcn_data_loader.transform.standard_kgcn_transform import StandardKGCNNetworkxTransform
-from kglib.kgcn_data_loader.utils import get_edge_types_for_training, get_node_types_for_training
+from kglib.kgcn_data_loader.transform.standard_kgcn_transform import (
+    StandardKGCNNetworkxTransform,
+)
+from kglib.kgcn_data_loader.utils import (
+    get_edge_types_for_training,
+    get_node_types_for_training,
+)
 
 from grakn_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
 from grakn_pytorch_geometric.models.core import KGCN
@@ -26,7 +31,7 @@ from about_this_graph import (
     CONTINUOUS_ATTRIBUTES,
     TYPES_AND_ROLES_TO_OBFUSCATE,
     TYPES_TO_IGNORE,
-    ROLES_TO_IGNORE
+    ROLES_TO_IGNORE,
 )
 
 
@@ -97,17 +102,15 @@ class GraphModel(pl.LightningModule):
         return F.softmax(predictions)
 
     def training_step(self, batch, batch_idx):
-        node_prediction, edge_prediction = self.model(
-            batch, steps=5, return_all_steps=True
-        )
-        node_loss = self.loss_function(node_prediction, batch.y, steps=5)
-        edge_loss = self.loss_function(edge_prediction, batch.y_edge, steps=5)
+        node_logits, edge_logits = self.model(batch, steps=5, return_all_steps=True)
+        node_loss = self.loss_function(node_logits, batch.y, steps=5)
+        edge_loss = self.loss_function(edge_logits, batch.y_edge, steps=5)
         loss = (node_loss + edge_loss) * 0.5
 
         self.log_dict(
             self.train_metrics(
-                node_prediction[:, :, -1],
-                edge_prediction[:, :, -1],
+                F.softmax(node_logits[:, :, -1]),
+                F.softmax(edge_logits[:, :, -1]),
                 batch.y,
                 batch.y_edge,
                 batch.batch,
@@ -119,14 +122,18 @@ class GraphModel(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        node_prediction, edge_prediction = self.model(batch)
-        node_loss = self.loss_function(node_prediction, batch.y)
-        edge_loss = self.loss_function(edge_prediction, batch.y_edge)
+        node_logits, edge_logits = self.model(batch)
+        node_loss = self.loss_function(node_logits, batch.y)
+        edge_loss = self.loss_function(edge_logits, batch.y_edge)
         loss = (node_loss + edge_loss) * 0.5
 
         self.log_dict(
             self.val_metrics(
-                node_prediction, edge_prediction, batch.y, batch.y_edge, batch.batch
+                F.softmax(node_logits),
+                F.softmax(edge_logits),
+                batch.y,
+                batch.y_edge,
+                batch.batch,
             ),
         )
         self.log("val_loss", loss)
