@@ -17,12 +17,12 @@ def main(number_of_examples=100):
 
     if DATABASENAME in client.databases().all():
         subprocess.call(
-            ["/Users/henning.kuich@bayer.com/tools/grakn-core-all-mac-2.0.0-alpha-8/grakn", "console", "--script",
+            ["grakn", "console", "--script",
              "schema_reload.script"]
         )
     else:
         subprocess.call(
-            ["/Users/henning.kuich@bayer.com/tools/grakn-core-all-mac-2.0.0-alpha-8/grakn", "console", "--script",
+            ["grakn", "console", "--script",
              "schema_load.script"]
         )
 
