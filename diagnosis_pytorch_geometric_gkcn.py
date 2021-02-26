@@ -78,7 +78,7 @@ test_loader = DataLoader(test_dataset, batch_size=5, num_workers=0, shuffle=True
 # Define a  los function.
 # Samples of class 0 are ignored for loss
 # calculation (element already exists in graph).
-# this is the done in the diagnosis examplein kgcn as well.
+# this is the done in the diagnosis examplein kgcn_tensorflow as well.
 loss_function = torch.nn.CrossEntropyLoss(ignore_index=0)
 
 model = KGCN(
