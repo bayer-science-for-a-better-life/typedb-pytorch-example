@@ -13,6 +13,5 @@ dataset = GraknNetworkxDataSet(
 )
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     create_app(dataset).run_server(debug=True)
