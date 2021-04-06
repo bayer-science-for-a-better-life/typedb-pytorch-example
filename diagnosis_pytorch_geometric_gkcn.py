@@ -5,8 +5,7 @@ KGCN in Pytorch Geometric
 import torch
 from torch_geometric.data import DataLoader
 
-from grakn.client import GraknClient
-from grakn.rpc.session import SessionType
+from grakn.client import *
 
 from kglib.kgcn_data_loader.transform.standard_kgcn_transform import (
     StandardKGCNNetworkxTransform,
@@ -30,8 +29,8 @@ from about_this_graph import (
 )
 
 
-client = GraknClient.core(address="localhost:1729")
-session = client.session(SessionType.DATA, database="diagnosis")
+client = Grakn.core_client(address="localhost:1730")
+session = client.session(session_type=SessionType.DATA, database="diagnosis")
 node_types = get_node_types_for_training(session, TYPES_TO_IGNORE)
 edge_types = get_edge_types_for_training(session, ROLES_TO_IGNORE)
 
@@ -57,7 +56,7 @@ grakn_dataset = GraknPytorchGeometricDataSet(
     example_indices=example_indices,
     get_query_handles_for_id=get_query_handles,
     infer=True,
-    uri="localhost:1729",
+    uri="localhost:1730",
     keyspace="diagnosis",
     networkx_transform=networkx_transform,
     caching=True,
@@ -71,7 +70,7 @@ test_dataset = GraknPytorchGeometricDataSet(
     example_indices=test_indices,
     get_query_handles_for_id=get_query_handles,
     infer=True,
-    uri="localhost:1729",
+    uri="localhost:1730",
     keyspace="diagnosis",
     networkx_transform=networkx_transform,
     caching=True,

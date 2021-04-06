@@ -7,7 +7,7 @@ dataset = GraknNetworkxDataSet(
     example_indices=list(range(100)),
     get_query_handles_for_id=get_query_handles,
     database="diagnosis",
-    uri="localhost:1729",
+    uri="localhost:1730",
     infer=True,
     transform=None,
 )

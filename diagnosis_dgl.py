@@ -6,8 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 import dgl
 
-from grakn.client import GraknClient
-from grakn.rpc.session import SessionType
+from grakn.client import *
 
 from kglib.kgcn_data_loader.transform.standard_kgcn_transform import (
     StandardKGCNNetworkxTransform,
@@ -17,7 +16,7 @@ from kglib.kgcn_data_loader.utils import (
     get_node_types_for_training,
 )
 
-from grakn_dataloading.networkx import GraknNetworkxDataSet
+from kglib.kgcn_data_loader.dataset.grakn_networkx_dataset import GraknNetworkxDataSet
 
 from about_this_graph import (
     get_query_handles,
@@ -29,8 +28,8 @@ from about_this_graph import (
 )
 
 
-client = GraknClient.core(address="localhost:1729")
-session = client.session(SessionType.DATA, database="diagnosis")
+client = Grakn.core_client(address="localhost:1729")
+session = client.session("diagnosis", SessionType.DATA)
 node_types = get_node_types_for_training(session, TYPES_TO_IGNORE)
 edge_types = get_edge_types_for_training(session, ROLES_TO_IGNORE)
 

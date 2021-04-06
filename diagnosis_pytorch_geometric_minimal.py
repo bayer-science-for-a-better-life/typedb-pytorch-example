@@ -6,8 +6,7 @@ give a very minimal example.
 
 import torch
 import torch.nn.functional as F
-from grakn.client import GraknClient
-from grakn.rpc.session import SessionType
+from grakn.client import *
 
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import GCNConv
@@ -33,8 +32,8 @@ from about_this_graph import (
 )
 
 
-client = GraknClient.core(address="localhost:1729")
-session = client.session(SessionType.DATA, database="diagnosis")
+client = Grakn.core_client(address="localhost:1729")
+session = client.session(session_type=SessionType.DATA, database="diagnosis")
 node_types = get_node_types_for_training(session, TYPES_TO_IGNORE)
 edge_types = get_edge_types_for_training(session, ROLES_TO_IGNORE)
 
