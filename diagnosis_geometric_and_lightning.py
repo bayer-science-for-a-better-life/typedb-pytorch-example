@@ -34,7 +34,7 @@ from about_this_graph import (
 )
 
 
-client = Grakn.core_client("localhost:1730")
+client = Grakn.core_client("localhost:1729")
 session = client.session(database="diagnosis", session_type=SessionType.DATA)
 node_types = get_node_types_for_training(session, TYPES_TO_IGNORE)
 edge_types = get_edge_types_for_training(session, ROLES_TO_IGNORE)
@@ -169,7 +169,7 @@ grakn_dataset = GraknPytorchGeometricDataSet(
     example_indices=example_indices,
     get_query_handles_for_id=get_query_handles,
     infer=True,
-    uri="localhost:1730",
+    uri="localhost:1729",
     database="diagnosis",
     networkx_transform=networkx_transform,
     caching=True,
@@ -183,7 +183,7 @@ val_dataset = GraknPytorchGeometricDataSet(
     example_indices=val_indices,
     get_query_handles_for_id=get_query_handles,
     infer=True,
-    uri="localhost:1730",
+    uri="localhost:1729",
     database="diagnosis",
     networkx_transform=networkx_transform,
     caching=True,
