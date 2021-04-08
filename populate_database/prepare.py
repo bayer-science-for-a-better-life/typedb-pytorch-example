@@ -14,9 +14,9 @@ def main(number_of_examples=100):
     client = Grakn.core_client("localhost:1729")
 
     if any(DATABASENAME in str(db) for db in client.databases().all()):
-        subprocess.call(["/Users/henning.kuich@bayer.com/tools/grakn-core-all-mac-2.0.1/grakn", "console", "--script", "schema_reload.script"])
+        subprocess.call(["grakn", "console", "--script", "schema_reload.script"])
     else:
-        subprocess.call(["/Users/henning.kuich@bayer.com/tools/grakn-core-all-mac-2.0.1/grakn", "console", "--script", "schema_load.script"])
+        subprocess.call(["grakn", "console", "--script", "schema_load.script"])
 
     with open("data.gql", "r") as data_file:
         data = data_file.readlines()
