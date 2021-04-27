@@ -98,7 +98,7 @@ class GraphModel(pl.LightningModule):
 
     def forward(self, x):
         predictions = self.model(x)
-        return F.softmax(predictions)
+        return predictions
 
     def training_step(self, batch, batch_idx):
         node_logits, edge_logits = self.model(batch, steps=5, return_all_steps=True)
@@ -192,6 +192,9 @@ val_dataset = GraknPytorchGeometricDataSet(
 # Use the test dataset to create a validation dataloader
 val_dataloader = DataLoader(val_dataset, batch_size=5, num_workers=0, shuffle=True)
 
+# running one batch though the network
+# so that lazy layers can be initialized.
+model(next(iter(train_dataloader)))
 
 if __name__ == "__main__":
     print(model)
