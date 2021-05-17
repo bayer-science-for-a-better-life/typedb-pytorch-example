@@ -19,7 +19,7 @@ from kglib.kgcn_data_loader.utils import (
     get_node_types_for_training,
 )
 
-from grakn_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
+from typedb_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
 
 
 from about_this_graph import (

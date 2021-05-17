@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import pytorch_lightning as pl
-from pytorch_lightning.metrics.classification import F1, Accuracy
+from torchmetrics.classification import F1, Accuracy
 from torch_geometric.data import DataLoader
 
 from grakn.client import *
@@ -15,13 +15,13 @@ from kglib.kgcn_data_loader.utils import (
     get_node_types_for_training,
 )
 
-from grakn_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
-from grakn_pytorch_geometric.models.core import KGCN
-from grakn_pytorch_geometric.utils.lightning_metrics import (
+from typedb_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
+from typedb_pytorch_geometric.models.core import KGCN
+from typedb_pytorch_geometric.utils.lightning_metrics import (
     FractionSolved,
     IgnoreIndexMetric,
 )
-from grakn_pytorch_geometric.utils.loss import MultiStepLoss
+from typedb_pytorch_geometric.utils.loss import MultiStepLoss
 
 
 from about_this_graph import (

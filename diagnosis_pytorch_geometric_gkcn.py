@@ -15,9 +15,9 @@ from kglib.kgcn_data_loader.utils import (
     get_node_types_for_training,
 )
 
-from grakn_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
-from grakn_pytorch_geometric.models.core import KGCN
-from grakn_pytorch_geometric.utils import metrics
+from typedb_pytorch_geometric.data.dataset import GraknPytorchGeometricDataSet
+from typedb_pytorch_geometric.models.core import KGCN
+from typedb_pytorch_geometric.utils import metrics
 
 from about_this_graph import (
     get_query_handles,
