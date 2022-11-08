@@ -26,14 +26,13 @@ There are only a few scripts in here ():
 
 ## Environment
 Here I used conda to create an environment. To recreate my setup
-clone the following 4 repositories and run create the environment
-using the environment-local.yml file:
+clone the following 3 repositories (or use git submodules and https://github.com/bayer-science-for-a-better-life/context-matters) 
+and run create the environment using the environment-local.yml file:
 
 ```
-git clone https://github.com/graknlabs/kglib.git
-git clone https://github.com/jorenretel/grakn-dataloading.git
-git clone https://github.com/jorenretel/grakn-pytorch-geometric.git
-git clone https://github.com/jorenretel/grakn-pytorch-example.git
+git clone https://github.com/hkuich/kglib
+git clone https://github.com/bayer-science-for-a-better-life/typedb-pytorch-geometric.git
+git clone https://github.com/bayer-science-for-a-better-life/typedb-pytorch-example.git
 
 cd grakn-pytorch-example
 
