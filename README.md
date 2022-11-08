@@ -3,8 +3,8 @@ Very Minimal Grakn + Pytorch Geometric Example
 
 :bangbang: Disclaimer:
 These ideas have made it into **TypeDB ML** by now. Please Use that.
-https://github.com/vaticle/typedb-ml
-https://blog.vaticle.com/link-prediction-knowledge-graph-pytorch-geometric-f35917320806
+* https://github.com/vaticle/typedb-ml
+* https://blog.vaticle.com/link-prediction-knowledge-graph-pytorch-geometric-f35917320806
 
 Copied directly from the diagnosis example in kglib.
 
